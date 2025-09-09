@@ -198,7 +198,7 @@ const Chatbot = () => {
 
   const handleIdScan = (method: 'scan' | 'upload') => {
     if (method === 'upload') {
-      addMessage(<UserUploadMessage key="id-upload-action" fileName="NIC_Card_Front.jpg" fileType="Image" />);
+      addMessage(<UserUploadMessage key="id-upload-action" fileName="ID Card Uploaded" fileType="Image" />);
     } else {
       addMessage(<UserMessage key="id-scan-action">ID Card Scanned</UserMessage>);
     }
