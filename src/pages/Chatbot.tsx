@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, ReactNode, FormEvent } from "react";
 import { BotMessage } from "../components/chatbot/BotMessage";
 import { UserMessage } from "../components/chatbot/UserMessage";
 import { ChatInput } from "../components/chatbot/ChatInput";
+import { ActionableMessage } from "../components/chatbot/ActionableMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare } from "lucide-react";
+import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 type Step =
@@ -45,14 +46,16 @@ const Chatbot = () => {
       switch (step) {
         case "GREETING":
           addMessage(
-            <BotMessage key="greeting">
+            <ActionableMessage
+              key="greeting"
+              ctas={[
+                { label: <><ScanLine className="mr-2 h-4 w-4" /> Scan ID Card</>, onClick: () => handleIdScan('scan') },
+                { label: <><Upload className="mr-2 h-4 w-4" /> Upload ID</>, onClick: () => handleIdScan('upload'), variant: 'secondary' }
+              ]}
+            >
               <p className="font-bold">Hello, I'm Ava. How can I help you today?</p>
               <p>To get started with account maintenance, please present your ID card.</p>
-              <div className="flex gap-2 mt-3">
-                <Button onClick={() => handleIdScan('scan')}><ScanLine className="mr-2 h-4 w-4" /> Scan ID Card</Button>
-                <Button onClick={() => handleIdScan('upload')} variant="secondary"><Upload className="mr-2 h-4 w-4" /> Upload ID</Button>
-              </div>
-            </BotMessage>
+            </ActionableMessage>
           );
           break;
         case "ID_SCANNING":
@@ -61,15 +64,31 @@ const Chatbot = () => {
           break;
         case "CUSTOMER_FOUND":
           addMessage(
-            <BotMessage key="customer-found">
+            <ActionableMessage
+              key="customer-found"
+              ctas={[
+                { label: <><Edit className="mr-2 h-4 w-4" /> Maintain existing account</>, onClick: handleMaintainAccount },
+                { label: 'Open another account', onClick: () => {}, variant: 'secondary' }
+              ]}
+            >
               <p className="font-bold text-green-600">Profile found ✅</p><p>Welcome back, {userData.name}. What would you like to do today?</p>
               <Card className="mt-3"><CardContent className="p-4 text-sm space-y-2"><p><strong>Name:</strong> {userData.name}</p><p><strong>CIF:</strong> {userData.cif}</p></CardContent></Card>
-              <div className="flex gap-2 mt-3"><Button onClick={handleMaintainAccount}><Edit className="mr-2 h-4 w-4" /> Maintain existing account</Button><Button variant="secondary">Open another account</Button></div>
-            </BotMessage>
+            </ActionableMessage>
           );
           break;
         case "CUSTOMER_NOT_FOUND":
-          addMessage(<BotMessage key="customer-not-found"><div className="flex items-center gap-2 font-bold text-red-600"><XCircle /> <p>Customer Not Found</p></div><p>We couldn’t find a customer record linked to this NIC.</p><div className="flex flex-wrap gap-2 mt-3"><Button variant="secondary">Open new account</Button><Button onClick={() => { setMessages([]); setStep('GREETING'); }}>Try again</Button><Button variant="outline">Contact Support</Button></div></BotMessage>);
+          addMessage(
+            <ActionableMessage
+              key="customer-not-found"
+              ctas={[
+                { label: 'Open new account', onClick: () => {}, variant: 'secondary' },
+                { label: 'Try again', onClick: () => { setMessages([]); setStep('GREETING'); } },
+                { label: 'Contact Support', onClick: () => {}, variant: 'outline' }
+              ]}
+            >
+              <div className="flex items-center gap-2 font-bold text-red-600"><XCircle /> <p>Customer Not Found</p></div><p>We couldn’t find a customer record linked to this NIC.</p>
+            </ActionableMessage>
+          );
           break;
         case "SHOW_PROFILE_FOR_EDIT":
           addMessage(
@@ -81,9 +100,11 @@ const Chatbot = () => {
                   <Separator />
                   <EditableField label="Signature" value={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} completed={completedUpdates.has('signature')} />
                   <Separator />
-                  <EditableField label="Physical Address" value={updatedData.address} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
+                  <EditableField label="Physical Address" value={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
-                  <EditableField label="Email & Mobile" value={`${updatedData.email} / ${updatedData.mobile}`} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
+                  <EditableField label="Mobile Number" value={updatedData.mobile} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
+                  <Separator />
+                  <EditableField label="Email Address" value={updatedData.email} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
                 </CardContent>
               </Card>
               <div className="flex gap-2 mt-3"><Button onClick={() => setStep('REVIEW')} disabled={JSON.stringify(userData) === JSON.stringify(updatedData)}>Review Changes</Button></div>
@@ -98,7 +119,15 @@ const Chatbot = () => {
           setTimeout(() => setStep('ADDRESS_CONFIRM'), 2000);
           break;
         case "ADDRESS_CONFIRM":
-          addMessage(<BotMessage key="address-confirm"><p>We've extracted the following address. Please review and confirm.</p><div className="mt-3"><Input id="address-input" defaultValue="45 Blue Residency, Andheri East, Mumbai" /></div><div className="flex gap-2 mt-3"><Button onClick={handleConfirmAddress}><Check className="mr-2 h-4 w-4" /> Confirm Address</Button></div></BotMessage>);
+           addMessage(
+            <ActionableMessage
+              key="address-confirm"
+              ctas={[{ label: <><Check className="mr-2 h-4 w-4" /> Confirm Address</>, onClick: handleConfirmAddress }]}
+            >
+              <p>We've extracted the following address. Please review and confirm.</p>
+              <div className="mt-3"><Input id="address-input" defaultValue="45 Blue Residency, Andheri East, Mumbai" /></div>
+            </ActionableMessage>
+          );
           break;
         case "UPDATE_CONTACT":
           addMessage(
@@ -120,7 +149,13 @@ const Chatbot = () => {
           break;
         case "REVIEW":
           addMessage(
-            <BotMessage key="review">
+            <ActionableMessage
+              key="review"
+              ctas={[
+                { label: <><Check className="mr-2 h-4 w-4" /> Confirm</>, onClick: handleConfirmChanges },
+                { label: 'Go Back', onClick: () => setStep('SHOW_PROFILE_FOR_EDIT'), variant: 'outline' }
+              ]}
+            >
               <p>Here’s a summary of your changes. Please confirm to proceed.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                 <Card><CardContent className="p-4 text-sm space-y-2">
@@ -136,15 +171,24 @@ const Chatbot = () => {
                   <p><strong>Email:</strong> {updatedData.email}</p>
                 </CardContent></Card>
               </div>
-              <div className="flex gap-2 mt-3"><Button onClick={handleConfirmChanges}><Check className="mr-2 h-4 w-4" /> Confirm</Button><Button variant="outline" onClick={() => setStep('SHOW_PROFILE_FOR_EDIT')}>Go Back</Button></div>
-            </BotMessage>
+            </ActionableMessage>
           );
           break;
         case "PROCESSING":
           addMessage(<ProcessingMessage onComplete={() => setStep('SUCCESS')} />);
           break;
         case "SUCCESS":
-          addMessage(<BotMessage key="success"><p className="font-bold text-lg">All set! 🎉</p><p>Your account details have been updated successfully.</p><div className="flex gap-2 mt-3"><Button onClick={() => window.location.reload()}>Start New</Button><Button variant="secondary">View electronic form</Button></div></BotMessage>);
+          addMessage(
+            <ActionableMessage
+              key="success"
+              ctas={[
+                { label: 'Start New', onClick: () => window.location.reload() },
+                { label: 'View electronic form', onClick: () => {}, variant: 'secondary' }
+              ]}
+            >
+              <p className="font-bold text-lg">All set! 🎉</p><p>Your account details have been updated successfully.</p>
+            </ActionableMessage>
+          );
           break;
       }
     };
