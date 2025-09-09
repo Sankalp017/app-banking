@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, Phone, ScanLine, Upload, XCircle, Fingerprint, PenSquare } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
@@ -190,7 +189,10 @@ const Chatbot = () => {
   const handleConfirmChanges = () => { addMessage(<UserMessage key="confirm-changes-action">Confirm Changes</UserMessage>); setStep('PROCESSING'); };
 
   return (
-    <div className="flex flex-col h-screen bg-blue-50 dark:bg-slate-900">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="p-4 border-b dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
+        <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100">AI Account Maintenance</h1>
+      </header>
       <main className="flex-1 overflow-y-auto p-4 space-y-6">{messages}</main>
       <div ref={bottomRef} />
       <ChatInput />

@@ -12,7 +12,7 @@ export const BotMessage = ({ children, className }: BotMessageProps) => {
       <div className="bg-primary text-primary-foreground flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full">
         <Bot size={20} />
       </div>
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 max-w-lg shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 max-w-lg shadow-sm border border-gray-200 dark:border-gray-700">
         {children}
       </div>
     </div>
