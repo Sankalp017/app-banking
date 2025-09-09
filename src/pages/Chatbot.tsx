@@ -141,7 +141,7 @@ const Chatbot = () => {
             <BotMessage key="update-mobile">
               <p>Please enter your new mobile number.</p>
               <form onSubmit={handleSaveMobile} className="space-y-3 mt-3">
-                <div><label className="text-sm">New Mobile Number</label><Input name="mobile" defaultValue={updatedData.mobile} /></div>
+                <div><label className="text-sm">New Mobile Number</label><Input name="mobile" placeholder="Enter new mobile number" /></div>
                 <Button type="submit">Save Changes</Button>
               </form>
             </BotMessage>
@@ -152,7 +152,7 @@ const Chatbot = () => {
             <BotMessage key="update-email">
               <p>Please enter your new email address.</p>
               <form onSubmit={handleSaveEmail} className="space-y-3 mt-3">
-                <div><label className="text-sm">New Email Address</label><Input name="email" type="email" defaultValue={updatedData.email} /></div>
+                <div><label className="text-sm">New Email Address</label><Input name="email" type="email" placeholder="Enter new email address" /></div>
                 <Button type="submit">Save Changes</Button>
               </form>
             </BotMessage>
