@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { UserUploadMessage } from "../components/chatbot/UserUploadMessage";
 
 type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
@@ -195,9 +196,19 @@ const Chatbot = () => {
     processStep();
   }, [step]);
 
-  const handleIdScan = (method: 'scan' | 'upload') => { addMessage(<UserMessage key="id-scan-action">{method === 'scan' ? 'Scanning ID Card...' : 'Uploading ID Card...'}</UserMessage>); setStep('ID_SCANNING'); };
+  const handleIdScan = (method: 'scan' | 'upload') => {
+    if (method === 'upload') {
+      addMessage(<UserUploadMessage key="id-upload-action" fileName="NIC_Card_Front.jpg" fileType="Image" />);
+    } else {
+      addMessage(<UserMessage key="id-scan-action">ID Card Scanned</UserMessage>);
+    }
+    setStep('ID_SCANNING');
+  };
   const handleMaintainAccount = () => { addMessage(<UserMessage key="maintain-action">Maintain existing account</UserMessage>); setStep('SHOW_PROFILE_FOR_EDIT'); };
-  const handleUploadBill = () => { addMessage(<UserMessage key="upload-bill-action">Uploading UtilityBill_Aug2025.pdf</UserMessage>); setStep('ADDRESS_UPLOADING'); };
+  const handleUploadBill = () => {
+    addMessage(<UserUploadMessage key="upload-bill-action" fileName="UtilityBill_Aug2025.pdf" fileType="PDF Document" />);
+    setStep('ADDRESS_UPLOADING');
+  };
   
   const handleConfirmAddress = () => {
     const newAddress = (document.getElementById('address-input') as HTMLInputElement).value;
