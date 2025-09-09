@@ -15,14 +15,14 @@ export const playNotificationSound = () => {
   gainNode.connect(audioContext.destination);
 
   oscillator.type = 'sine';
-  // Lower frequency for a softer tone
-  oscillator.frequency.setValueAtTime(420, audioContext.currentTime);
+  // Even lower frequency for a more subtle tone
+  oscillator.frequency.setValueAtTime(380, audioContext.currentTime);
 
-  // Softer volume and longer fade-in/out
+  // Lower volume and a quicker fade for subtlety
   gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-  gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05);
-  gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+  gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.02); // Quick fade in
+  gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);   // Fade out over the remaining duration
 
   oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.3);
+  oscillator.stop(audioContext.currentTime + 0.2);
 };
