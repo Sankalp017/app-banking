@@ -6,9 +6,10 @@ interface BotMessageProps {
   children: ReactNode;
   className?: string;
   onEdit?: () => void;
+  onContinueEdit?: () => void;
 }
 
-export const BotMessage = ({ children, className, onEdit }: BotMessageProps) => {
+export const BotMessage = ({ children, className, onEdit, onContinueEdit }: BotMessageProps) => {
   return (
     <div className={`flex items-start gap-3 ${className}`}>
       <div className="bg-primary text-primary-foreground flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full">
@@ -16,7 +17,14 @@ export const BotMessage = ({ children, className, onEdit }: BotMessageProps) => 
       </div>
       <div className="flex-1 group">
         <div className="bg-white dark:bg-slate-800 rounded-lg p-4 max-w-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          {children}
+          <div>{children}</div>
+          {onContinueEdit && (
+            <div className="mt-4">
+              <Button onClick={onContinueEdit} size="sm">
+                Continue Edit
+              </Button>
+            </div>
+          )}
         </div>
         {onEdit && (
           <div className="pt-2">
