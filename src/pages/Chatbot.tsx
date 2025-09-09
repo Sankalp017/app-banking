@@ -14,7 +14,7 @@ type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
   | "SHOW_PROFILE_FOR_EDIT" | "UPDATE_ADDRESS" | "ADDRESS_UPLOADING"
   | "ADDRESS_CONFIRM" | "UPDATE_MOBILE" | "UPDATE_EMAIL" | "OTP_MOBILE" | "OTP_EMAIL"
-  | "REVIEW" | "PROCESSING" | "SUCCESS";
+  | "PROCESSING" | "SUCCESS";
 
 const initialUserData = {
   name: "John Doe",
@@ -97,18 +97,18 @@ const Chatbot = () => {
               <p>Here is your current information. Click edit on any section you'd like to update.</p>
               <Card className="mt-3">
                 <CardContent className="p-4 space-y-4">
-                  <EditableField label="NIC" value={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} completed={completedUpdates.has('nic')} />
+                  <EditableField label="NIC" originalValue={userData.nic} currentValue={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} />
                   <Separator />
-                  <EditableField label="Signature" value={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} completed={completedUpdates.has('signature')} />
+                  <EditableField label="Signature" originalValue={userData.signature} currentValue={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} />
                   <Separator />
-                  <EditableField label="Physical Address" value={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
+                  <EditableField label="Physical Address" originalValue={userData.address} currentValue={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
-                  <EditableField label="Mobile Number" value={updatedData.mobile} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_MOBILE')} completed={completedUpdates.has('mobile')} />
+                  <EditableField label="Mobile Number" originalValue={userData.mobile} currentValue={updatedData.mobile} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_MOBILE')} completed={completedUpdates.has('mobile')} />
                   <Separator />
-                  <EditableField label="Email Address" value={updatedData.email} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_EMAIL')} completed={completedUpdates.has('email')} />
+                  <EditableField label="Email Address" originalValue={userData.email} currentValue={updatedData.email} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_EMAIL')} completed={completedUpdates.has('email')} />
                 </CardContent>
               </Card>
-              <div className="flex gap-2 mt-3"><Button onClick={() => setStep('REVIEW')} disabled={JSON.stringify(userData) === JSON.stringify(updatedData)}>Review Changes</Button></div>
+              <div className="flex gap-2 mt-3"><Button onClick={handleSubmitChanges} disabled={JSON.stringify(userData) === JSON.stringify(updatedData)}>Submit Changes</Button></div>
             </BotMessage>
           );
           break;
@@ -157,30 +157,6 @@ const Chatbot = () => {
           break;
         case "OTP_EMAIL":
           addMessage(<BotMessage key="otp-email"><p>An OTP has been sent to <strong>{updatedData.email}</strong>.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
-          break;
-        case "REVIEW":
-          const changes = [];
-          if (updatedData.address !== userData.address) {
-            changes.push(<ChangeItem key="address" label="Address" from={userData.address} to={updatedData.address} />);
-          }
-          if (updatedData.mobile !== userData.mobile) {
-            changes.push(<ChangeItem key="mobile" label="Mobile Number" from={userData.mobile} to={updatedData.mobile} />);
-          }
-          if (updatedData.email !== userData.email) {
-            changes.push(<ChangeItem key="email" label="Email Address" from={userData.email} to={updatedData.email} />);
-          }
-          addMessage(
-            <ActionableMessage
-              key="review"
-              ctas={[
-                { label: <><Check className="mr-2 h-4 w-4" /> Confirm</>, onClick: handleConfirmChanges },
-                { label: 'Go Back', onClick: () => setStep('SHOW_PROFILE_FOR_EDIT'), variant: 'outline' }
-              ]}
-            >
-              <p>Here’s a summary of your changes. Please confirm to proceed.</p>
-              <Card className="mt-3"><CardContent className="p-4 space-y-4">{changes}</CardContent></Card>
-            </ActionableMessage>
-          );
           break;
         case "PROCESSING":
           addMessage(<ProcessingMessage onComplete={() => setStep('SUCCESS')} />);
@@ -253,7 +229,10 @@ const Chatbot = () => {
     }
   };
 
-  const handleConfirmChanges = () => { addMessage(<UserMessage key="confirm-changes-action">Confirm Changes</UserMessage>); setStep('PROCESSING'); };
+  const handleSubmitChanges = () => { 
+    addMessage(<UserMessage key="submit-changes-action">Submit Changes</UserMessage>); 
+    setStep('PROCESSING'); 
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
@@ -288,36 +267,37 @@ const Chatbot = () => {
   );
 };
 
-const EditableField = ({ label, value, icon, onEdit, completed }: { label: string, value: string, icon: ReactNode, onEdit: () => void, completed?: boolean }) => (
-  <div className="flex justify-between items-center">
-    <div className="flex items-center gap-3">
-      {icon}
-      <div>
-        <p className="text-sm font-medium">{label}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
-      </div>
-    </div>
-    {completed ? (
-      <div className="flex items-center gap-1 text-green-600">
-        <CheckCircle className="h-4 w-4" />
-        <span className="text-sm font-medium">Done</span>
-      </div>
-    ) : (
-      <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
-    )}
-  </div>
-);
+const EditableField = ({ label, originalValue, currentValue, icon, onEdit, completed }: { label: string, originalValue: string, currentValue: string, icon: ReactNode, onEdit: () => void, completed?: boolean }) => {
+  const hasChanged = originalValue !== currentValue;
 
-const ChangeItem = ({ label, from, to }: { label: string, from: string, to: string }) => (
-  <div>
-    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</p>
-    <div className="flex items-center gap-2 text-sm">
-      <span className="text-gray-500 line-through">{from}</span>
-      <ArrowRight className="h-4 w-4 text-gray-400" />
-      <span className="text-primary font-semibold">{to}</span>
+  return (
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-3">
+        {icon}
+        <div>
+          <p className="text-sm font-medium">{label}</p>
+          {hasChanged ? (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500 line-through">{originalValue}</span>
+              <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <span className="text-primary font-semibold">{currentValue}</span>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 dark:text-gray-400">{currentValue}</p>
+          )}
+        </div>
+      </div>
+      {completed ? (
+        <div className="flex items-center gap-1 text-green-600">
+          <CheckCircle className="h-4 w-4" />
+          <span className="text-sm font-medium">Done</span>
+        </div>
+      ) : (
+        <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 const ProcessingMessage = ({ onComplete }: { onComplete: () => void }) => {
   const items = ["Update Finacle with new data", "Keep an audit trail", "Send electronic notification", "Notify OPC", "Store form in DMS", "Update other systems"];
