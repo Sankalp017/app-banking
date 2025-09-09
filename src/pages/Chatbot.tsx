@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { UserUploadMessage } from "../components/chatbot/UserUploadMessage";
+import { playNotificationSound } from "../utils/sound";
 
 type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
@@ -42,11 +43,16 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, message]);
   };
 
+  const addBotMessage = (message: ReactNode) => {
+    setMessages((prev) => [...prev, message]);
+    playNotificationSound();
+  };
+
   useEffect(() => {
     const processStep = () => {
       switch (step) {
         case "GREETING":
-          addMessage(
+          addBotMessage(
             <ActionableMessage
               key="greeting"
               ctas={[
@@ -54,17 +60,17 @@ const Chatbot = () => {
                 { label: <><Upload className="mr-2 h-4 w-4" /> Upload ID</>, onClick: () => handleIdScan('upload'), variant: 'secondary' }
               ]}
             >
-              <p className="font-bold">Hello, I'm Ava. How can I help you today?</p>
+              <p className="font-bold">Hello, I'm Kai. How can I help you today?</p>
               <p>To get started with account maintenance, please present your ID card.</p>
             </ActionableMessage>
           );
           break;
         case "ID_SCANNING":
-          addMessage(<BotMessage key="scanning"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <p>Analysing ID card...</p></div><div className="mt-2 border-2 border-dashed border-primary rounded-lg p-4 text-center animate-pulse"><p className="text-sm text-gray-500">NIC: 9876543210V</p></div></BotMessage>);
+          addBotMessage(<BotMessage key="scanning"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <p>Analysing ID card...</p></div><div className="mt-2 border-2 border-dashed border-primary rounded-lg p-4 text-center animate-pulse"><p className="text-sm text-gray-500">NIC: 9876543210V</p></div></BotMessage>);
           setTimeout(() => setStep(Math.random() > 0.2 ? 'CUSTOMER_FOUND' : 'CUSTOMER_NOT_FOUND'), 2500);
           break;
         case "CUSTOMER_FOUND":
-          addMessage(
+          addBotMessage(
             <ActionableMessage
               key="customer-found"
               ctas={[
@@ -78,7 +84,7 @@ const Chatbot = () => {
           );
           break;
         case "CUSTOMER_NOT_FOUND":
-          addMessage(
+          addBotMessage(
             <ActionableMessage
               key="customer-not-found"
               ctas={[
@@ -92,14 +98,14 @@ const Chatbot = () => {
           );
           break;
         case "SHOW_PROFILE_FOR_EDIT":
-          addMessage(
+          addBotMessage(
             <BotMessage key={`profile-edit-${Date.now()}`}>
               <p>Here is your current information. Click edit on any section you'd like to update.</p>
               <Card className="mt-3">
                 <CardContent className="p-4 space-y-4">
-                  <EditableField label="NIC" originalValue={userData.nic} currentValue={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} />
+                  <EditableField label="NIC" originalValue={userData.nic} currentValue={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addBotMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} />
                   <Separator />
-                  <EditableField label="Signature" originalValue={userData.signature} currentValue={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} />
+                  <EditableField label="Signature" originalValue={userData.signature} currentValue={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addBotMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} />
                   <Separator />
                   <EditableField label="Physical Address" originalValue={userData.address} currentValue={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
@@ -113,14 +119,14 @@ const Chatbot = () => {
           );
           break;
         case "UPDATE_ADDRESS":
-          addMessage(<BotMessage key="update-address"><p>To update your address, please upload a recent utility bill.</p><div className="mt-3 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary" onClick={handleUploadBill}><FileUp className="mx-auto h-10 w-10 text-gray-400" /><p className="mt-2 text-sm">Click to upload</p></div></BotMessage>);
+          addBotMessage(<BotMessage key="update-address"><p>To update your address, please upload a recent utility bill.</p><div className="mt-3 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary" onClick={handleUploadBill}><FileUp className="mx-auto h-10 w-10 text-gray-400" /><p className="mt-2 text-sm">Click to upload</p></div></BotMessage>);
           break;
         case "ADDRESS_UPLOADING":
-          addMessage(<BotMessage key="address-uploading"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /><p>Scanning document...</p></div></BotMessage>);
+          addBotMessage(<BotMessage key="address-uploading"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /><p>Scanning document...</p></div></BotMessage>);
           setTimeout(() => setStep('ADDRESS_CONFIRM'), 2000);
           break;
         case "ADDRESS_CONFIRM":
-           addMessage(
+           addBotMessage(
             <ActionableMessage
               key="address-confirm"
               ctas={[{ label: <><Check className="mr-2 h-4 w-4" /> Confirm Address</>, onClick: handleConfirmAddress }]}
@@ -131,7 +137,7 @@ const Chatbot = () => {
           );
           break;
         case "UPDATE_MOBILE":
-          addMessage(
+          addBotMessage(
             <BotMessage key="update-mobile">
               <p>Please enter your new mobile number.</p>
               <form onSubmit={handleSaveMobile} className="space-y-3 mt-3">
@@ -142,7 +148,7 @@ const Chatbot = () => {
           );
           break;
         case "UPDATE_EMAIL":
-          addMessage(
+          addBotMessage(
             <BotMessage key="update-email">
               <p>Please enter your new email address.</p>
               <form onSubmit={handleSaveEmail} className="space-y-3 mt-3">
@@ -153,16 +159,16 @@ const Chatbot = () => {
           );
           break;
         case "OTP_MOBILE":
-          addMessage(<BotMessage key="otp-mobile"><p>We've sent an OTP to <strong>{updatedData.mobile}</strong>. Please enter it below.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
+          addBotMessage(<BotMessage key="otp-mobile"><p>We've sent an OTP to <strong>{updatedData.mobile}</strong>. Please enter it below.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
           break;
         case "OTP_EMAIL":
-          addMessage(<BotMessage key="otp-email"><p>An OTP has been sent to <strong>{updatedData.email}</strong>.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
+          addBotMessage(<BotMessage key="otp-email"><p>An OTP has been sent to <strong>{updatedData.email}</strong>.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
           break;
         case "PROCESSING":
-          addMessage(<ProcessingMessage onComplete={() => setStep('SUCCESS')} />);
+          addBotMessage(<ProcessingMessage onComplete={() => setStep('SUCCESS')} />);
           break;
         case "SUCCESS":
-          addMessage(
+          addBotMessage(
             <ActionableMessage
               key="success"
               ctas={[
@@ -245,7 +251,7 @@ const Chatbot = () => {
             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">Ava</h1>
+            <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">Kai</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">Digital Banking Assistant</p>
           </div>
         </div>
