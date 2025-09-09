@@ -8,6 +8,7 @@ interface Cta {
   label: ReactNode;
   onClick: () => void;
   variant?: ButtonVariant;
+  disabled?: boolean;
 }
 
 interface ActionableMessageProps {
@@ -33,7 +34,7 @@ export const ActionableMessage = ({ children, ctas }: ActionableMessageProps) =>
             key={index}
             onClick={() => handleClick(cta.onClick)}
             variant={cta.variant || "default"}
-            disabled={actionsTaken}
+            disabled={actionsTaken || cta.disabled}
           >
             {cta.label}
           </Button>

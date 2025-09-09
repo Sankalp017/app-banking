@@ -6,14 +6,14 @@ import { ActionableMessage } from "../components/chatbot/ActionableMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin } from "lucide-react";
+import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { UserUploadMessage } from "../components/chatbot/UserUploadMessage";
 
 type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
   | "SHOW_PROFILE_FOR_EDIT" | "UPDATE_ADDRESS" | "ADDRESS_UPLOADING"
-  | "ADDRESS_CONFIRM" | "UPDATE_CONTACT" | "OTP_MOBILE" | "OTP_EMAIL"
+  | "ADDRESS_CONFIRM" | "UPDATE_MOBILE" | "UPDATE_EMAIL" | "OTP_MOBILE" | "OTP_EMAIL"
   | "REVIEW" | "PROCESSING" | "SUCCESS";
 
 const initialUserData = {
@@ -69,7 +69,7 @@ const Chatbot = () => {
               key="customer-found"
               ctas={[
                 { label: <><Edit className="mr-2 h-4 w-4" /> Maintain existing account</>, onClick: handleMaintainAccount },
-                { label: 'Open another account', onClick: () => {}, variant: 'secondary' }
+                { label: 'Open another account', onClick: () => {}, variant: 'secondary', disabled: true }
               ]}
             >
               <p className="font-bold text-green-600">Profile found ✅</p><p>Welcome back, {userData.name}. What would you like to do today?</p>
@@ -103,9 +103,9 @@ const Chatbot = () => {
                   <Separator />
                   <EditableField label="Physical Address" value={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
-                  <EditableField label="Mobile Number" value={updatedData.mobile} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
+                  <EditableField label="Mobile Number" value={updatedData.mobile} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_MOBILE')} completed={completedUpdates.has('mobile')} />
                   <Separator />
-                  <EditableField label="Email Address" value={updatedData.email} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
+                  <EditableField label="Email Address" value={updatedData.email} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_EMAIL')} completed={completedUpdates.has('email')} />
                 </CardContent>
               </Card>
               <div className="flex gap-2 mt-3"><Button onClick={() => setStep('REVIEW')} disabled={JSON.stringify(userData) === JSON.stringify(updatedData)}>Review Changes</Button></div>
@@ -130,12 +130,22 @@ const Chatbot = () => {
             </ActionableMessage>
           );
           break;
-        case "UPDATE_CONTACT":
+        case "UPDATE_MOBILE":
           addMessage(
-            <BotMessage key="update-contact">
-              <p>Please enter your new mobile number and email address.</p>
-              <form onSubmit={handleSaveContact} className="space-y-3 mt-3">
+            <BotMessage key="update-mobile">
+              <p>Please enter your new mobile number.</p>
+              <form onSubmit={handleSaveMobile} className="space-y-3 mt-3">
                 <div><label className="text-sm">New Mobile Number</label><Input name="mobile" defaultValue={updatedData.mobile} /></div>
+                <Button type="submit">Save Changes</Button>
+              </form>
+            </BotMessage>
+          );
+          break;
+        case "UPDATE_EMAIL":
+          addMessage(
+            <BotMessage key="update-email">
+              <p>Please enter your new email address.</p>
+              <form onSubmit={handleSaveEmail} className="space-y-3 mt-3">
                 <div><label className="text-sm">New Email Address</label><Input name="email" type="email" defaultValue={updatedData.email} /></div>
                 <Button type="submit">Save Changes</Button>
               </form>
@@ -146,9 +156,19 @@ const Chatbot = () => {
           addMessage(<BotMessage key="otp-mobile"><p>We've sent an OTP to <strong>{updatedData.mobile}</strong>. Please enter it below.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
           break;
         case "OTP_EMAIL":
-          addMessage(<BotMessage key="otp-email"><p>Great! Now, an OTP has been sent to <strong>{updatedData.email}</strong>.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
+          addMessage(<BotMessage key="otp-email"><p>An OTP has been sent to <strong>{updatedData.email}</strong>.</p><form onSubmit={handleVerifyOtp} className="flex gap-2 mt-3"><Input placeholder="6-digit OTP" maxLength={6} /><Button type="submit">Verify</Button></form></BotMessage>);
           break;
         case "REVIEW":
+          const changes = [];
+          if (updatedData.address !== userData.address) {
+            changes.push(<ChangeItem key="address" label="Address" from={userData.address} to={updatedData.address} />);
+          }
+          if (updatedData.mobile !== userData.mobile) {
+            changes.push(<ChangeItem key="mobile" label="Mobile Number" from={userData.mobile} to={updatedData.mobile} />);
+          }
+          if (updatedData.email !== userData.email) {
+            changes.push(<ChangeItem key="email" label="Email Address" from={userData.email} to={updatedData.email} />);
+          }
           addMessage(
             <ActionableMessage
               key="review"
@@ -158,20 +178,7 @@ const Chatbot = () => {
               ]}
             >
               <p>Here’s a summary of your changes. Please confirm to proceed.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                <Card><CardContent className="p-4 text-sm space-y-2">
-                  <p className="font-bold">Before</p>
-                  <p><strong>Address:</strong> {userData.address}</p>
-                  <p><strong>Mobile:</strong> {userData.mobile}</p>
-                  <p><strong>Email:</strong> {userData.email}</p>
-                </CardContent></Card>
-                <Card className="border-primary"><CardContent className="p-4 text-sm space-y-2">
-                  <p className="font-bold">After</p>
-                  <p><strong>Address:</strong> {updatedData.address}</p>
-                  <p><strong>Mobile:</strong> {updatedData.mobile}</p>
-                  <p><strong>Email:</strong> {updatedData.email}</p>
-                </CardContent></Card>
-              </div>
+              <Card className="mt-3"><CardContent className="p-4 space-y-4">{changes}</CardContent></Card>
             </ActionableMessage>
           );
           break;
@@ -218,21 +225,30 @@ const Chatbot = () => {
     setStep('SHOW_PROFILE_FOR_EDIT');
   };
 
-  const handleSaveContact = (e: FormEvent<HTMLFormElement>) => {
+  const handleSaveMobile = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    setUpdatedData(prev => ({ ...prev, mobile: formData.get('mobile') as string, email: formData.get('email') as string }));
-    addMessage(<UserMessage key="save-contact-action">Contact details updated</UserMessage>);
+    setUpdatedData(prev => ({ ...prev, mobile: formData.get('mobile') as string }));
+    addMessage(<UserMessage key="save-mobile-action">New mobile number entered</UserMessage>);
     setStep('OTP_MOBILE');
+  };
+
+  const handleSaveEmail = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setUpdatedData(prev => ({ ...prev, email: formData.get('email') as string }));
+    addMessage(<UserMessage key="save-email-action">New email address entered</UserMessage>);
+    setStep('OTP_EMAIL');
   };
 
   const handleVerifyOtp = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     addMessage(<UserMessage key={`otp-verified-${step}`}>OTP Verified</UserMessage>);
     if (step === 'OTP_MOBILE') {
-      setStep('OTP_EMAIL');
-    } else {
-      setCompletedUpdates(prev => new Set(prev).add('contact'));
+      setCompletedUpdates(prev => new Set(prev).add('mobile'));
+      setStep('SHOW_PROFILE_FOR_EDIT');
+    } else if (step === 'OTP_EMAIL') {
+      setCompletedUpdates(prev => new Set(prev).add('email'));
       setStep('SHOW_PROFILE_FOR_EDIT');
     }
   };
@@ -289,6 +305,17 @@ const EditableField = ({ label, value, icon, onEdit, completed }: { label: strin
     ) : (
       <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
     )}
+  </div>
+);
+
+const ChangeItem = ({ label, from, to }: { label: string, from: string, to: string }) => (
+  <div>
+    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</p>
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-gray-500 line-through">{from}</span>
+      <ArrowRight className="h-4 w-4 text-gray-400" />
+      <span className="text-primary font-semibold">{to}</span>
+    </div>
   </div>
 );
 
