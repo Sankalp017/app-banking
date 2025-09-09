@@ -5,7 +5,7 @@ import { ChatInput } from "../components/chatbot/ChatInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, Phone, ScanLine, Upload, XCircle, Fingerprint, PenSquare } from "lucide-react";
+import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 type Step =
@@ -186,8 +186,27 @@ const Chatbot = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
-      <header className="p-4 border-b dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-left text-gray-800 dark:text-gray-100">Ava | Digital Banking Assistant</h1>
+      <header className="p-4 border-b dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-shrink-0">
+            <div className="bg-primary text-primary-foreground w-10 h-10 flex items-center justify-center rounded-full">
+              <Bot size={20} />
+            </div>
+            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">Ava</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Digital Banking Assistant</p>
+          </div>
+        </div>
+        <div className="flex items-center">
+          <Button size="icon" variant="ghost">
+            <Search className="h-5 w-5 text-gray-500" />
+          </Button>
+          <Button size="icon" variant="ghost">
+            <MoreVertical className="h-5 w-5 text-gray-500" />
+          </Button>
+        </div>
       </header>
       <main className="flex-1 overflow-y-auto p-4 space-y-6">{messages}</main>
       <div ref={bottomRef} />
