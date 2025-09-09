@@ -80,7 +80,17 @@ const Chatbot = () => {
               ]}
             >
               <p className="font-bold text-green-600">Profile found ✅</p><p>Welcome back, {userData.name}. What would you like to do today?</p>
-              <Card className="mt-3"><CardContent className="p-4 text-sm space-y-2"><p><strong>Name:</strong> {userData.name}</p><p><strong>CIF:</strong> {userData.cif}</p></CardContent></Card>
+              <Card className="mt-3">
+                <CardContent className="p-4 text-sm space-y-2">
+                  <p><strong>Name:</strong> {userData.name}</p>
+                  <p><strong>CIF:</strong> {userData.cif}</p>
+                  <p><strong>Mobile:</strong> {userData.mobile}</p>
+                  <p><strong>Email:</strong> {userData.email}</p>
+                  <p><strong>Address:</strong> {userData.address}</p>
+                  <p><strong>NIC:</strong> {userData.nic}</p>
+                  <p><strong>Signature:</strong> {userData.signature}</p>
+                </CardContent>
+              </Card>
             </ActionableMessage>
           );
           break;
