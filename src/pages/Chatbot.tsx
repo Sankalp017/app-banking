@@ -10,6 +10,7 @@ import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, Mor
 import { Separator } from "@/components/ui/separator";
 import { UserUploadMessage } from "../components/chatbot/UserUploadMessage";
 import { playNotificationSound } from "../utils/sound";
+import { UpdateForm } from "../components/chatbot/UpdateForm";
 
 type Step =
   | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
@@ -140,10 +141,16 @@ const Chatbot = () => {
           addBotMessage(
             <BotMessage key="update-mobile">
               <p>Please enter your new mobile number.</p>
-              <form onSubmit={handleSaveMobile} className="space-y-3 mt-3">
-                <div><label className="text-sm">New Mobile Number</label><Input name="mobile" placeholder="Enter new mobile number" /></div>
-                <Button type="submit">Save Changes</Button>
-              </form>
+              <UpdateForm
+                fieldLabel="New Mobile Number"
+                fieldName="mobile"
+                placeholder="Enter new mobile number"
+                onSubmit={(mobile) => {
+                  setUpdatedData(prev => ({ ...prev, mobile }));
+                  addMessage(<UserMessage key="save-mobile-action">New mobile number entered</UserMessage>);
+                  setStep('OTP_MOBILE');
+                }}
+              />
             </BotMessage>
           );
           break;
@@ -151,10 +158,17 @@ const Chatbot = () => {
           addBotMessage(
             <BotMessage key="update-email">
               <p>Please enter your new email address.</p>
-              <form onSubmit={handleSaveEmail} className="space-y-3 mt-3">
-                <div><label className="text-sm">New Email Address</label><Input name="email" type="email" placeholder="Enter new email address" /></div>
-                <Button type="submit">Save Changes</Button>
-              </form>
+              <UpdateForm
+                fieldLabel="New Email Address"
+                fieldName="email"
+                inputType="email"
+                placeholder="Enter new email address"
+                onSubmit={(email) => {
+                  setUpdatedData(prev => ({ ...prev, email }));
+                  addMessage(<UserMessage key="save-email-action">New email address entered</UserMessage>);
+                  setStep('OTP_EMAIL');
+                }}
+              />
             </BotMessage>
           );
           break;
@@ -205,22 +219,6 @@ const Chatbot = () => {
     setCompletedUpdates(prev => new Set(prev).add('address'));
     addMessage(<UserMessage key="confirm-address-action">Address confirmed</UserMessage>);
     setStep('SHOW_PROFILE_FOR_EDIT');
-  };
-
-  const handleSaveMobile = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    setUpdatedData(prev => ({ ...prev, mobile: formData.get('mobile') as string }));
-    addMessage(<UserMessage key="save-mobile-action">New mobile number entered</UserMessage>);
-    setStep('OTP_MOBILE');
-  };
-
-  const handleSaveEmail = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    setUpdatedData(prev => ({ ...prev, email: formData.get('email') as string }));
-    addMessage(<UserMessage key="save-email-action">New email address entered</UserMessage>);
-    setStep('OTP_EMAIL');
   };
 
   const handleVerifyOtp = (e: FormEvent<HTMLFormElement>) => {
