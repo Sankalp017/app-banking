@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <style>
+    .signature-path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  </style>
+  <path class="signature-path" d="M20,70 C25,40 40,30 50,50 C60,70 70,70 80,60 C90,50 110,20 130,40 C150,60 160,55 170,50 C180,45 190,40 200,60 C210,80 220,80 230,70 C240,60 260,30 280,50" />
+</svg>

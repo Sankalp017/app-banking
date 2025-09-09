@@ -88,7 +88,10 @@ const Chatbot = () => {
                   <p><strong>Email:</strong> {userData.email}</p>
                   <p><strong>Address:</strong> {userData.address}</p>
                   <p><strong>NIC:</strong> {userData.nic}</p>
-                  <p><strong>Signature:</strong> {userData.signature}</p>
+                  <div className="flex items-start pt-1">
+                    <strong className="mr-2 whitespace-nowrap">Signature:</strong>
+                    <img src="/signature.svg" alt="User signature" className="h-10 -ml-1 -mt-2" />
+                  </div>
                 </CardContent>
               </Card>
             </ActionableMessage>
@@ -102,7 +105,16 @@ const Chatbot = () => {
                 <CardContent className="p-4 space-y-4">
                   <EditableField label="NIC" originalValue={userData.nic} currentValue={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addBotMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} />
                   <Separator />
-                  <EditableField label="Signature" originalValue={userData.signature} currentValue={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addBotMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} />
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <PenSquare className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium">Signature</p>
+                        <img src="/signature.svg" alt="User signature" className="h-10" />
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => addBotMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)}><Edit className="h-4 w-4" /></Button>
+                  </div>
                   <Separator />
                   <EditableField label="Physical Address" originalValue={userData.address} currentValue={updatedData.address} icon={<MapPin className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
