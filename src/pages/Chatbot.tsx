@@ -29,6 +29,7 @@ const Chatbot = () => {
   const [step, setStep] = useState<Step>("GREETING");
   const [userData] = useState(initialUserData);
   const [updatedData, setUpdatedData] = useState(initialUserData);
+  const [completedUpdates, setCompletedUpdates] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,13 +77,13 @@ const Chatbot = () => {
               <p>Here is your current information. Click edit on any section you'd like to update.</p>
               <Card className="mt-3">
                 <CardContent className="p-4 space-y-4">
-                  <EditableField label="NIC" value={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} />
+                  <EditableField label="NIC" value={updatedData.nic} icon={<Fingerprint className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>NIC updates are not yet supported.</BotMessage>)} completed={completedUpdates.has('nic')} />
                   <Separator />
-                  <EditableField label="Signature" value={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} />
+                  <EditableField label="Signature" value={updatedData.signature} icon={<PenSquare className="h-4 w-4 text-gray-500" />} onEdit={() => addMessage(<BotMessage>Signature updates are not yet supported.</BotMessage>)} completed={completedUpdates.has('signature')} />
                   <Separator />
-                  <EditableField label="Physical Address" value={updatedData.address} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} />
+                  <EditableField label="Physical Address" value={updatedData.address} icon={<Phone className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_ADDRESS')} completed={completedUpdates.has('address')} />
                   <Separator />
-                  <EditableField label="Email & Mobile" value={`${updatedData.email} / ${updatedData.mobile}`} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} />
+                  <EditableField label="Email & Mobile" value={`${updatedData.email} / ${updatedData.mobile}`} icon={<Mail className="h-4 w-4 text-gray-500" />} onEdit={() => setStep('UPDATE_CONTACT')} completed={completedUpdates.has('contact')} />
                 </CardContent>
               </Card>
               <div className="flex gap-2 mt-3"><Button onClick={() => setStep('REVIEW')} disabled={JSON.stringify(userData) === JSON.stringify(updatedData)}>Review Changes</Button></div>
@@ -143,7 +144,7 @@ const Chatbot = () => {
           addMessage(<ProcessingMessage onComplete={() => setStep('SUCCESS')} />);
           break;
         case "SUCCESS":
-          addMessage(<BotMessage key="success"><p className="font-bold text-lg">All set! 🎉</p><p>Your account details have been updated successfully.</p><div className="flex gap-2 mt-3"><Button onClick={() => window.location.reload()}>Finish</Button><Button variant="secondary">View electronic form</Button></div></BotMessage>);
+          addMessage(<BotMessage key="success"><p className="font-bold text-lg">All set! 🎉</p><p>Your account details have been updated successfully.</p><div className="flex gap-2 mt-3"><Button onClick={() => window.location.reload()}>Start New</Button><Button variant="secondary">View electronic form</Button></div></BotMessage>);
           break;
       }
     };
@@ -153,12 +154,15 @@ const Chatbot = () => {
   const handleIdScan = (method: 'scan' | 'upload') => { addMessage(<UserMessage key="id-scan-action">{method === 'scan' ? 'Scanning ID Card...' : 'Uploading ID Card...'}</UserMessage>); setStep('ID_SCANNING'); };
   const handleMaintainAccount = () => { addMessage(<UserMessage key="maintain-action">Maintain existing account</UserMessage>); setStep('SHOW_PROFILE_FOR_EDIT'); };
   const handleUploadBill = () => { addMessage(<UserMessage key="upload-bill-action">Uploading UtilityBill_Aug2025.pdf</UserMessage>); setStep('ADDRESS_UPLOADING'); };
+  
   const handleConfirmAddress = () => {
     const newAddress = (document.getElementById('address-input') as HTMLInputElement).value;
     setUpdatedData(prev => ({ ...prev, address: newAddress }));
+    setCompletedUpdates(prev => new Set(prev).add('address'));
     addMessage(<UserMessage key="confirm-address-action">Address confirmed</UserMessage>);
     setStep('SHOW_PROFILE_FOR_EDIT');
   };
+
   const handleSaveContact = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -166,17 +170,24 @@ const Chatbot = () => {
     addMessage(<UserMessage key="save-contact-action">Contact details updated</UserMessage>);
     setStep('OTP_MOBILE');
   };
+
   const handleVerifyOtp = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     addMessage(<UserMessage key={`otp-verified-${step}`}>OTP Verified</UserMessage>);
-    setStep(step === 'OTP_MOBILE' ? 'OTP_EMAIL' : 'SHOW_PROFILE_FOR_EDIT');
+    if (step === 'OTP_MOBILE') {
+      setStep('OTP_EMAIL');
+    } else {
+      setCompletedUpdates(prev => new Set(prev).add('contact'));
+      setStep('SHOW_PROFILE_FOR_EDIT');
+    }
   };
+
   const handleConfirmChanges = () => { addMessage(<UserMessage key="confirm-changes-action">Confirm Changes</UserMessage>); setStep('PROCESSING'); };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
       <header className="p-4 border-b dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100">AI Account Maintenance</h1>
+        <h1 className="text-xl font-bold text-left text-gray-800 dark:text-gray-100">Ava | Digital Banking Assistant</h1>
       </header>
       <main className="flex-1 overflow-y-auto p-4 space-y-6">{messages}</main>
       <div ref={bottomRef} />
@@ -185,7 +196,7 @@ const Chatbot = () => {
   );
 };
 
-const EditableField = ({ label, value, icon, onEdit }: { label: string, value: string, icon: ReactNode, onEdit: () => void }) => (
+const EditableField = ({ label, value, icon, onEdit, completed }: { label: string, value: string, icon: ReactNode, onEdit: () => void, completed?: boolean }) => (
   <div className="flex justify-between items-center">
     <div className="flex items-center gap-3">
       {icon}
@@ -194,7 +205,14 @@ const EditableField = ({ label, value, icon, onEdit }: { label: string, value: s
         <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
       </div>
     </div>
-    <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+    {completed ? (
+      <div className="flex items-center gap-1 text-green-600">
+        <CheckCircle className="h-4 w-4" />
+        <span className="text-sm font-medium">Done</span>
+      </div>
+    ) : (
+      <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+    )}
   </div>
 );
 

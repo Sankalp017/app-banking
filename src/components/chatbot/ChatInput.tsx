@@ -8,7 +8,7 @@ export const ChatInput = () => {
       <div className="p-4">
         <div className="relative max-w-3xl mx-auto">
           <Input
-            placeholder="Account maintenance is handled through the prompts above."
+            placeholder="Ask me anything..."
             className="pr-24 h-12 rounded-full"
             disabled
           />
