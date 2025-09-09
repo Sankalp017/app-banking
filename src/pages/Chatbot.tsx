@@ -6,14 +6,14 @@ import { ActionableMessage } from "../components/chatbot/ActionableMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, XCircle, Fingerprint, PenSquare, MapPin, ArrowRight } from "lucide-react";
+import { Bot, Check, CheckCircle, CircleDashed, Edit, FileUp, Loader2, Mail, MoreVertical, Phone, ScanLine, Search, Upload, Fingerprint, PenSquare, MapPin, ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { UserUploadMessage } from "../components/chatbot/UserUploadMessage";
 import { playNotificationSound } from "../utils/sound";
 import { UpdateForm } from "../components/chatbot/UpdateForm";
 
 type Step =
-  | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND" | "CUSTOMER_NOT_FOUND"
+  | "GREETING" | "ID_SCANNING" | "CUSTOMER_FOUND"
   | "SHOW_PROFILE_FOR_EDIT" | "UPDATE_ADDRESS" | "ADDRESS_UPLOADING"
   | "ADDRESS_CONFIRM" | "UPDATE_MOBILE" | "UPDATE_EMAIL" | "OTP_MOBILE" | "OTP_EMAIL"
   | "PROCESSING" | "SUCCESS";
@@ -68,7 +68,7 @@ const Chatbot = () => {
           break;
         case "ID_SCANNING":
           addBotMessage(<BotMessage key="scanning"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <p>Analysing ID card...</p></div><div className="mt-2 border-2 border-dashed border-primary rounded-lg p-4 text-center animate-pulse"><p className="text-sm text-gray-500">NIC: 9876543210V</p></div></BotMessage>);
-          setTimeout(() => setStep(Math.random() > 0.2 ? 'CUSTOMER_FOUND' : 'CUSTOMER_NOT_FOUND'), 2500);
+          setTimeout(() => setStep('CUSTOMER_FOUND'), 2500);
           break;
         case "CUSTOMER_FOUND":
           addBotMessage(
@@ -81,20 +81,6 @@ const Chatbot = () => {
             >
               <p className="font-bold text-green-600">Profile found ✅</p><p>Welcome back, {userData.name}. What would you like to do today?</p>
               <Card className="mt-3"><CardContent className="p-4 text-sm space-y-2"><p><strong>Name:</strong> {userData.name}</p><p><strong>CIF:</strong> {userData.cif}</p></CardContent></Card>
-            </ActionableMessage>
-          );
-          break;
-        case "CUSTOMER_NOT_FOUND":
-          addBotMessage(
-            <ActionableMessage
-              key="customer-not-found"
-              ctas={[
-                { label: 'Open new account', onClick: () => {}, variant: 'secondary' },
-                { label: 'Try again', onClick: () => { setMessages([]); setStep('GREETING'); } },
-                { label: 'Contact Support', onClick: () => {}, variant: 'outline' }
-              ]}
-            >
-              <div className="flex items-center gap-2 font-bold text-red-600"><XCircle /> <p>Customer Not Found</p></div><p>We couldn’t find a customer record linked to this NIC.</p>
             </ActionableMessage>
           );
           break;
@@ -197,7 +183,7 @@ const Chatbot = () => {
       }
     };
     processStep();
-  }, [step]);
+  }, [step, userData.name, updatedData.mobile, updatedData.email]);
 
   const handleIdScan = (method: 'scan' | 'upload') => {
     if (method === 'upload') {
@@ -309,7 +295,7 @@ const ProcessingMessage = ({ onComplete }: { onComplete: () => void }) => {
   useEffect(() => {
     items.forEach((_, i) => setTimeout(() => setChecked(p => { const n = [...p]; n[i] = true; return n; }), (i + 1) * 700));
     setTimeout(onComplete, (items.length + 1) * 700);
-  }, []);
+  }, [onComplete]);
   return (<BotMessage key="processing"><div className="flex items-center gap-2 mb-3"><Loader2 className="h-5 w-5 animate-spin" /><p>Processing your request...</p></div><ul className="space-y-2 text-sm">{items.map((item, i) => <li key={i} className="flex items-center gap-2">{checked[i] ? <CheckCircle className="h-4 w-4 text-green-500" /> : <CircleDashed className="h-4 w-4 text-gray-400 animate-spin" />}<span>{item}</span></li>)}</ul></BotMessage>);
 };
 
