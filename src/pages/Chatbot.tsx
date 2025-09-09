@@ -59,7 +59,7 @@ const Chatbot = () => {
           );
           break;
         case "ID_SCANNING":
-          addMessage(<BotMessage key="scanning"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <p>Scanning ID... Align your card inside the frame.</p></div><div className="mt-2 border-2 border-dashed border-primary rounded-lg p-4 text-center animate-pulse"><p className="text-sm text-gray-500">NIC: 9876543210V</p></div></BotMessage>);
+          addMessage(<BotMessage key="scanning"><div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> <p>Analysing ID card...</p></div><div className="mt-2 border-2 border-dashed border-primary rounded-lg p-4 text-center animate-pulse"><p className="text-sm text-gray-500">NIC: 9876543210V</p></div></BotMessage>);
           setTimeout(() => setStep(Math.random() > 0.2 ? 'CUSTOMER_FOUND' : 'CUSTOMER_NOT_FOUND'), 2500);
           break;
         case "CUSTOMER_FOUND":
